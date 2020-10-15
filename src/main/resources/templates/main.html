@@ -1,0 +1,165 @@
+<style>
+    #textarea{
+        border:1px solid black;
+        width: 85%;
+        height: 50%;
+    }
+
+    #textarea button{
+        border:1px solid #eee;
+        background:#f5f5f5;
+        margin:4px;
+        font-size:1.2em;
+        cursor:pointer;
+    }
+
+    #textarea button:after{
+        content:"\d7";
+        color:red;
+        margin-left:2px;
+    }
+
+</style>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        loadDefault();
+
+        checkDefault();
+
+        loadCustom();
+
+        $("#customAdd").click(function(event) {
+            var newExtension = $("#customExtension").val();
+
+            if (newExtension) {
+                insertNewCustomExtension(newExtension);
+            }
+
+            $("#customExtension").val('').focus();
+        });
+
+        $('#textarea').on('click', 'button', function(e){
+            e.preventDefault();
+            removeCustomExtension($(this).text());
+            $(this).remove();
+            return false;
+        })
+    });
+
+    function loadDefault() {
+        $.get( "/default", function(data) {
+            for (i = 0; i < data.length; i++) {
+                $("input[type='checkbox'][value=" + data[i].name + "]").attr("checked", data[i].blocked);
+            }
+        }, 'json');
+    }
+
+    function checkDefault() {
+        $("input[type='checkbox']").change(function() {
+            var id = this.id;
+
+            var obj = new Object();
+            obj.id = id;
+            obj.name = this.value;
+            obj.blocked = this.checked;
+
+            var json = JSON.stringify(obj);
+
+            $.ajax({
+                url: "/default/" + id,
+                type: "put",
+                contentType: 'application/json',
+                data: json,
+                success: function (data) {
+                    console.log(data);
+                }
+            });
+        });
+    }
+
+    function loadCustom() {
+        $.get( "/custom", function(data) {
+            for (i = 0; i < data.length; i++) {
+                hangExtension(data[i].name);
+            }
+            countingCustoms();
+        }, 'json');
+    }
+
+    function insertNewCustomExtension(newExtension) {
+        var obj = new Object();
+        obj.name = newExtension;
+
+        var json = JSON.stringify(obj);
+
+        $.ajax({
+            url: "/custom",
+            type: "post",
+            contentType: 'application/json',
+            data: json,
+            success: function (data) {
+                if (data === true) {
+                    hangExtension(newExtension);
+                    countingCustoms();
+                }
+            }
+        });
+    }
+
+    function removeCustomExtension(extension) {
+        var obj = new Object();
+        obj.name = extension;
+
+        var json = JSON.stringify(obj);
+
+        $.ajax({
+            url: "/custom/" + extension,
+            type: "delete",
+            contentType: 'application/json',
+            data: json,
+            success: function (data) {
+                if (data === true) {
+                    countingCustoms();
+                }
+            }
+        });
+    }
+
+    function hangExtension(extension) {
+        $('<button/>').text(extension).insertBefore($('#customExtensions'));
+    }
+
+    function countingCustoms() {
+        $.get( "/custom", function(data) {
+            $("#customsCount").text(data.length + "/" + 200);
+        }, 'json');
+    }
+
+</script>
+<body>
+<div>
+    <span>고정 확장자</span>
+    <input type="checkbox" id="1" value="bat"/>bat
+    <input type="checkbox" id="2" value="cmd"/>cmd
+    <input type="checkbox" id="3" value="com"/>com
+    <input type="checkbox" id="4" value="cpl"/>cpl
+    <input type="checkbox" id="5" value="exe"/>exe
+    <input type="checkbox" id="6" value="scr"/>scr
+    <input type="checkbox" id="7" value="js"/>js
+</div>
+<div>
+    <span>커스텀 확장자</span>
+    <input type="text" id="customExtension"/>
+    <button id="customAdd">+추가</button>
+    <div>
+        <div id="textarea">
+            <div id="customsCount">
+                count
+            </div>
+            <div id="customExtensions">
+            </div>
+        </div>
+    </div>
+</div>
+</body>
