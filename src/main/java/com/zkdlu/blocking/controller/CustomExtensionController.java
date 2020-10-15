@@ -32,7 +32,7 @@ public class CustomExtensionController implements CrudController<CustomExtension
 
     @Override
     public boolean delete(String key) {
-        return false;
+        return extensionService.deleteExtension(key);
     }
 
     @Override

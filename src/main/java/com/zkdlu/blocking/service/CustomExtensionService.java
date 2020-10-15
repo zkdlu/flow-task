@@ -15,13 +15,21 @@ public class CustomExtensionService {
 
     public boolean createExtension(CustomExtension extension) {
         try {
-            Optional<CustomExtension> result = extensionRepo.findById(extension.getName());
+            String name = extension.getName();
+            if (name.length() == 0) {
+                return false;
+            }
+
+            Optional<CustomExtension> result = extensionRepo.findById(name);
             if (result.isPresent()) {
                 return false;
             }
 
-            extensionRepo.save(extension);
-            return true;
+            long totalCount = extensionRepo.count();
+            if (totalCount < 200) {
+                extensionRepo.save(extension);
+                return true;
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -31,5 +39,15 @@ public class CustomExtensionService {
 
     public List<CustomExtension> getCustoms() {
         return extensionRepo.findAll();
+    }
+
+    public boolean deleteExtension(String key) {
+        try {
+            extensionRepo.deleteById(key);
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 }
