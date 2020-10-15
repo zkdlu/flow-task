@@ -1,7 +1,9 @@
 package com.zkdlu.blocking.service;
 
 import com.zkdlu.blocking.model.CustomExtension;
+import com.zkdlu.blocking.model.DefaultExtension;
 import com.zkdlu.blocking.repository.CustomExtensionRepo;
+import com.zkdlu.blocking.repository.DefaultExtensionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,17 +13,22 @@ import java.util.Optional;
 @Service
 public class CustomExtensionService {
     @Autowired
+    DefaultExtensionRepo defaultExtensionRepo;
+
+    @Autowired
     CustomExtensionRepo extensionRepo;
 
     public boolean createExtension(CustomExtension extension) {
         try {
-            String name = extension.getName();
-            if (name.length() == 0) {
+            if (isEmptyName(extension)) {
                 return false;
             }
 
-            Optional<CustomExtension> result = extensionRepo.findById(name);
-            if (result.isPresent()) {
+            if (isDuplicatedExtension(extension)) {
+                return false;
+            }
+
+            if (isDefaultExtension(extension)) {
                 return false;
             }
 
@@ -50,4 +57,21 @@ public class CustomExtensionService {
             return false;
         }
     }
+
+    private boolean isDefaultExtension(CustomExtension extension) {
+        String name = extension.getName();
+        DefaultExtension defaultExtension = defaultExtensionRepo.findOneByName(name);
+
+        return defaultExtension != null;
+    }
+
+    private boolean isDuplicatedExtension(CustomExtension extension) {
+        Optional<CustomExtension> result = extensionRepo.findById(extension.getName());
+        return result.isPresent();
+    }
+
+    private boolean isEmptyName(CustomExtension extension) {
+        return extension.getName().length() == 0;
+    }
+
 }
