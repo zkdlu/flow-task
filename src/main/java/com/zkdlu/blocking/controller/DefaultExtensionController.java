@@ -26,17 +26,17 @@ public class DefaultExtensionController implements CrudController<DefaultExtensi
     }
 
     @Override
-    public DefaultExtension update(Integer integer, DefaultExtension model) {
-        return null;
+    public DefaultExtension update(Integer key, DefaultExtension extension) {
+        return extensionService.updateExtension(key, extension);
     }
 
     @Override
-    public boolean delete(Integer integer) {
+    public boolean delete(Integer key) {
         return false;
     }
 
     @Override
-    public DefaultExtension readOne(Integer integer) {
+    public DefaultExtension readOne(Integer key) {
         return null;
     }
 }
